@@ -9,7 +9,7 @@ our @ISA = qw(Exporter);
 our %EXPORT_TAGS = ( 'all' => [ qw(taivuta to_number %sijamuodot) ] );
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 our @EXPORT = qw( );
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 our %sijamuodot=(
    monikko     => 0,
@@ -78,7 +78,7 @@ sub taivuta{
 
 
     # 1 = regex
-    # 2 = käytettävän säännön id; viimeinen id = 76
+    # 2 = käytettävän säännön id; viimeinen id = 111
     # 3 = esimerkkisanan alku
     # 4 = esimerkkisanan loppu         ; isolla kirjaimet, jotka ovat aina juuri nämä
     # 5 = esimerkkisanan lopun käännös ; isolla kirjaimet, jotka ovat aina juuri nämä
@@ -87,9 +87,67 @@ sub taivuta{
     #
     #  1                                         2       3      4      5      6 7
 
-    # lainasanat, jotka päättyvät vokaaliin
+       # illatiivi (kotiin)
+       $sijamuoto_id == 8 && (
+             s/(.*[$v])([$v])             $ /$1$2h$2n    !77 /x
 
-       s/(
+          # poikkeukset
+          || s/^([th])(uu?l)i             $ /$1$2een     !92 /x
+          || s/^kivi                      $ /kiveen      !93 /x #
+
+          # monikko
+          || s/(.*)([$v])(\2)t            $ /$1$2isiin   !94 /x # lampaat lampaisiin
+          || s/(.*)([$k])([a:])t          $ /$1$2$o\0ihin!95 /x # perunat perunoihin
+
+          || s/(.*)(s)                    $ /$1kseen     !96 /x # sirkus kseen
+          || s/(.*)(e)                    $ /$1$2$2seen  !78 /x # hame   hameeseen
+          || s/(.*)(nk)(i)                $ /$1$2een     !79 /x # henki  henkeen
+          || s/(.*)([$v])                 $ /$1$2$2n     !80 /x # kissa  kissaan
+          || s/(.*)([$k]+)                $ /$1$2iin     !81 /x # kiss   kissiin
+       ) 
+
+       # partitiivi
+       || $sijamuoto_id == 6 && (
+             s/(.*[$v])([$v])             $ /$1$2t$a     !82 /x
+
+          # poikkeukset
+          || s/^([th])(uu?l)i             $ /$1$2ta      !108/x #
+          || s/^kivi                      $ /kive$a      !98 /x #
+
+          # monikko
+          || s/(.*)([$v])(\2)t            $ /$1$2it$a    !99 /x # lampaat lampaita
+          || s/(.*)([$v])([$k])([a:])t    $ /$1$2$3$o\0it$a!100/x # perunat perunoita
+          || s/(.*)([$k])([a:])t          $ /$1$2$o\0j$a !   /x # aika    aikoja
+          || s/(.*)([$k])([$v])t          $ /$1$2$3j$a   !   /x # jauhot  jauhoja
+
+          || s/(.*)(s)                    $ /$1$2ta      !109/x # sirkus ta
+          || s/(.*)(e)                    $ /$1$2tt$a    !83 /x # hame   hametta
+          || s/(.*)(nk)(i)                $ /$1$2e$a     !84 /x # henki  henkeä
+          || s/(.*)([$v])                 $ /$1$2$a      !85 /x # kissa  kissaa
+          || s/(.*)([$k]+)                $ /$1$2i$a     !86 /x # kiss   kissiä
+       ) 
+
+       # essiivi
+       || $sijamuoto_id == 7 && (
+             s/(.*[$v])([$v])             $ /$1$2n$a     !87 /x
+
+          # poikkeukset
+          || s/^([th])(uu?l)i             $ /$1$2ena     !110/x
+          || s/^kivi                      $ /kiven$a     !102/x #
+
+          # monikko
+          || s/(.*)([$v])(\2)t            $ /$1$2in$a    !103/x # lampaat lampaina
+          || s/(.*)([$k])([a:])t          $ /$1$2$o\0in$a!104/x # perunat perunoina
+
+          || s/(.*)(s)                    $ /$1ksena     !111/x # sirkus ksena
+          || s/(.*)(e)                    $ /$1$2$2n$a   !88 /x # hame   hameena
+          || s/(.*)(nk)i                  $ /$1$2en$a    !89 /x # henki  henkenä
+          || s/(.*)([$v])                 $ /$1$2n$a     !90 /x # kissa  kissana
+          || s/(.*)([$k]+)                $ /$1$2in$a    !91 /x # kiss   kissinä
+       ) 
+
+       # lainasanat, jotka päättyvät vokaaliin
+       || s/(
           andante
           |anime
           |apache
@@ -149,9 +207,9 @@ sub taivuta{
 
     # monikko
     || /t$/ && (
-         s/([a:])t                    $ /$o\0i$p     !   /x # kal   AT     oi   10 2
-      || s/([$v])t                    $ /$1$p        !   /x # pul   u      u    
-      || s/(.)                        $ /$1i$p       !   /x # marke T      tIT    
+         s/([a:])t                    $ /$o\0i$p     !105/x # kal   AT     oi   10 2
+      || s/([$v])t                    $ /$1$p        !106/x # pul   u      u    
+      || s/(.)                        $ /$1i$p       !107/x # marke T      tIT    
     ) 
 
     # numerot 8-10
@@ -200,7 +258,8 @@ sub taivuta{
 
     # yksittäiset sanat, joita ei voi laittaa yhdyssanaan
 
-    || s/^aika                   $ /ajan        !64 /x # vrt. taika   -> taia
+    || s/^aika                   $ /aja$p       !64 /x # vrt. taika   -> taia
+    || s/^([th])(uu?l)i          $ /$1$2e$p     !64 /x # vrt. kuli    -> kulin
 
     # yksittäiset sanat, mahdolliset myös yhdyssanoissa
 
@@ -212,7 +271,7 @@ sub taivuta{
     || s/tuoli                   $ /tuoli$p     !66 /x # vrt. huoli   -> huole
     || s/henki                   $ /henge$p     !66 /x # vrt. renki   -> rengi
     || s/puomi                   $ /puomi$p     !66 /x # vrt. luomi   -> luome
-    || s/[th]uuli                $ /tuule$p     !66 /x # vrt. muuli   -> muuli
+    || s/(th])uli                $ /$1uule$p    !66 /x # vrt. muuli   -> muuli
     || s/nauris                  $ /naurii$p    !66 /x
     || s/veli                    $ /velje$p     !66 /x # vrt. peli    -> peli
     || s/ruis                    $ /rukii$p     !66 /x
@@ -414,7 +473,7 @@ Olettaa, että sana on nimi, mikäli ensimmäinen kirjain on iso.
 
 =head1 KNOWN CASES AND HOW WELL THEY ARE BEING INFLECTED
 
-CASE          YKSIKKÖ       PLURAL
+CASE          SINGULAR      PLURAL
 
 genetiivi     very good     poor
 
@@ -426,11 +485,11 @@ adessiivi     good          poor
 
 ablatiivi     good          poor
 
-partitiivi    poor          poor
+partitiivi    good          poor
 
-essiivi       poor          poor
+essiivi       good          poor
 
-illatiivi     poor          poor
+illatiivi     good          poor
 
 translatiivi  good          poor
 
@@ -452,11 +511,11 @@ adessiivi     hyvä          huono
 
 ablatiivi     hyvä          huono
 
-partitiivi    huono         huono
+partitiivi    hyvä          huono
 
-essiivi       huono         huono
+essiivi       hyvä          huono
 
-illatiivi     huono         huono
+illatiivi     hyvä          huono
 
 translatiivi  hyvä          huono
 
@@ -502,7 +561,7 @@ Jos käytät tätä moduulia tai jos on jotain parannusehdotuksia, niin olis tosi ha
 
 =head1 COPYRIGHT / TEKIJÄNOIKEUS
 
-Copyright 2003 Ville Jungman
+Copyright 2004 Ville Jungman
 
 =head1 LICENSE
 
